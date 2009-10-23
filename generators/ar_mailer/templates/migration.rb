@@ -6,6 +6,7 @@ class <%= migration_name %> < ActiveRecord::Migration
       t.column :last_send_attempt, :integer, :default => 0
       t.column :mail, :text
       t.column :created_on, :datetime
+      t.column :ready, :boolean, :default => 0, :null => false
     end
   end
 
