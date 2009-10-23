@@ -1,3 +1,12 @@
+= 1.0.0 (ynw-ar_sendmail)
+
+* ARMailer messages don't get send until they are combined into digests
+* all messages to same addressee are combined into one digest email
+* it only supports text/plain messages
+* if the digest mail is too big it gets truncated, and full digest is dumped to a file on server; truncated digest will tell about it
+* the sending itself can be triggered by method call, so now you have options to use ar_sendmail process or smth else, e.g. BackgrounDRB job
+* you can specify :smtp_settings to be used when sending digests: we needed it to be other than default ActionMailer::Base.smtp_settings
+
 = 2.1.5
 
 * Bugs fixed
