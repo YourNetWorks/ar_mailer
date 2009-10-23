@@ -1,6 +1,7 @@
 require 'optparse'
 require 'net/smtp'
-require 'smtp_tls' unless Net::SMTP.instance_methods.include?("enable_starttls_auto")
+require File.join(File.dirname(__FILE__), '..', 'smtp_tls') unless Net::SMTP.instance_methods.include?("enable_starttls_auto")
+require 'rubygems'
 
 ##
 # Hack in RSET
@@ -336,6 +337,7 @@ class ActionMailer::ARSendmail
     @once = options[:Once]
     @verbose = options[:Verbose]
     @max_age = options[:MaxAge]
+    @smtp_settings = options[:smtp_settings]
 
     @failed_auth_count = 0
   end
@@ -425,7 +427,7 @@ class ActionMailer::ARSendmail
   # last 300 seconds.
 
   def find_emails
-    options = { :conditions => ['last_send_attempt < ?', Time.now.to_i - 300] }
+    options = { :conditions => ['last_send_attempt < ? and ready', Time.now.to_i - 300] }
     options[:limit] = batch_size unless batch_size.nil?
     mail = ActionMailer::Base.email_class.find :all, options
 
@@ -458,17 +460,21 @@ class ActionMailer::ARSendmail
 
     loop do
       now = Time.now
-      begin
-        cleanup
-        emails = find_emails
-        deliver(emails) unless emails.empty?
-      rescue ActiveRecord::Transactions::TransactionError
-      end
+      deliver_emails
       break if @once
       sleep @delay if now + @delay > Time.now
     end
   end
 
+  def deliver_emails
+    begin
+      cleanup
+      emails = find_emails
+      deliver(emails) unless emails.empty?
+    rescue ActiveRecord::Transactions::TransactionError
+    end
+  end
+  
   ##
   # Proxy to ActionMailer::Base::smtp_settings.  See
   # http://api.rubyonrails.org/classes/ActionMailer/Base.html
@@ -478,7 +484,80 @@ class ActionMailer::ARSendmail
   # backwards compatibility.
 
   def smtp_settings
-    ActionMailer::Base.smtp_settings rescue ActionMailer::Base.server_settings
+    @smtp_settings ||= ActionMailer::Base.smtp_settings rescue ActionMailer::Base.server_settings
   end
 
+  ##
+  # Packs non-digested messages into digests, and send them
+  # options: (see default values in first lines of code)
+  #   :dump_path - dir in which to dump full digest message in case it needs to be truncated.
+  #   :subj_prefix - specifies subject prefix that is already set to all the messages. If it's specified it's removed from subjects when combining them into digest's subject.
+  #   :max_subj_size - maximum subject size of digest email  
+  #   :mail_body_size_limit - maximum body size of digest email
+  #   :smtp_settings - what smtp settings to use. Hash is expected described in http://api.rubyonrails.org/classes/ActionMailer/Base.html, +setting :tls to false will work. If omitted asks it from #smtp_settings method  
+  def self.digest_error_emails(options = {})
+    options.reverse_merge! :dump_path => 'log', :max_subj_size => 150, :mail_body_size_limit => 1.megabyte 
+    
+    subj_prefix = options[:subj_prefix] 
+    max_subj_size = options[:max_subj_size]
+    mail_body_size_limit = options[:mail_body_size_limit]
+
+    email_class = ActionMailer::Base.email_class
+    #Email.count(:group => :to) doesn't work because to is reserved word in MySQL
+    counts = email_class.connection.select_rows("select `to`, count(*) AS count_all FROM `emails` where !ready GROUP BY `to`")
+    counts.each do |to, count|
+      if count.to_i == 1
+        email_class.update_all(['ready = ?', true], ['`to` = ?', to])
+        next
+      end
+      subjects = []
+      mails = []
+      from = nil
+      email_class.transaction do
+        emails = email_class.find(:all, :conditions => {:to => to, :ready => false}, :order => 'created_on')
+        msg = nil
+        email = nil
+        last_date = nil
+        emails.each do |email|
+          msg = TMail::Mail.parse(email.mail)
+          subject = msg.subject
+          subject = subject[subj_prefix.length..-1] if subject.starts_with?(subj_prefix)
+          subjects << subject
+          mail = msg.header.select {|key, value| ['date', 'from', 'subject'].include?(key)}.
+                  map {|key, value| '%s: %s' % [key.capitalize, value.to_s]}.join("\n")
+          mail += "\n\n" + msg.body
+          mails << mail
+          from = msg.header['from'].to_s
+          last_date = msg.date
+          email.destroy
+        end
+        new = TMail::Mail.new
+        new.to = to
+        new.from = from
+        subject = subj_prefix + subjects.uniq.join("; ")
+        new.subject = subject.size > max_subj_size ? subject[0..max_subj_size] + '... (and more)' : subject
+        new.mime_version = msg.mime_version
+        new.content_type = "text/plain" #this code doesn't really support anything else
+        new.charset = msg.charset
+        new.date = last_date
+        splitter = "\n" + '=' * 70 + "\n"
+        body = splitter + mails.join(splitter)
+        if body.size > mail_body_size_limit
+          email_dump_path = options[:dump_path] + "/err.emails.#{Time.now.to_i}"
+          File.open(email_dump_path, 'w') do |f|
+            f.write(body)
+          end
+          old_size = body.size
+          body = body[0..mail_body_size_limit] #yeah it will be bit more considering the header, but we don't care
+          new_num = body.split(splitter).size
+          body = ("WARNING: not all the messages made it into this digest - some are lost in truncation. " +
+                  "Original number of messages - #{mails.size} (here only #{new_num}); original size - #{old_size} " +
+                  "(here only #{body.size}). Full dump of original emails is placed in #{email_dump_path} @#{`hostname`.strip}.\n\n") + body
+        end
+        new.body = body
+        email = email_class.create!(:from => email.from, :to => to, :mail => new.to_s, :ready => true)
+      end
+    end
+    self.new(:smtp_settings => options[:smtp_settings]).deliver_emails
+  end
 end
