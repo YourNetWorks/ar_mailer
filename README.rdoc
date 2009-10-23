@@ -68,7 +68,7 @@ Then
 
 For Rails >= 2.1, in your environment.rb:
   
-  config.gem "ynw-ar_mailer", :lib => 'action_mailer/ar_mailer', :source => 'http://gems.github.com'
+  config.gem "ynw-ar_mailer", :lib => 'action_mailer/ar_mailer', :source => 'http://gemcutter.org'
 
 For Rails 2.0, in an initializer file:
 
