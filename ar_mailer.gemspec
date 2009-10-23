@@ -1,12 +1,12 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{ar_mailer}
-  s.version = "2.1.6"
+  s.name = %q{ynw-ar_mailer}
+  s.version = "0.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Eric Hodel", "Adam Meehan"]
-  s.date = %q{2009-07-06}
+  s.authors = ["Eric Hodel", "Adam Meehan", "Artem Vasiliev"]
+  s.date = %q{2009-10-24}
   s.default_executable = %q{ar_sendmail}
   s.description = %q{Even delivering email to the local machine may take too long when you have to send hundreds of messages.  ar_mailer allows you to store messages into the database for later delivery by a separate process, ar_sendmail.}
   s.email = %q{adam.meehan@gmail.com}
