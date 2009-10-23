@@ -31,7 +31,7 @@ Sometimes Prod can face some issue that make it error like hell. There's no need
 
 * it only supports text/plain messages
 
-* if the digest mail is too big it gets truncated, and full digest is dumped to a file on server; truncated digest will tell about it.
+* if the digest mail is too big it gets truncated, and full digest is dumped to a file on server; truncated digest will tell about it
 
 * the sending itself can be triggered by method call, so now you have options to use ar_sendmail process or smth else, e.g. BackgrounDRB job
 
