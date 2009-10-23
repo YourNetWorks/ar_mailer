@@ -553,6 +553,8 @@ class ActionMailer::ARSendmail
           body = ("WARNING: not all the messages made it into this digest - some are lost in truncation. " +
                   "Original number of messages - #{mails.size} (here only #{new_num}); original size - #{old_size} " +
                   "(here only #{body.size}). Full dump of original emails is placed in #{email_dump_path} @#{`hostname`.strip}.\n\n") + body
+        else
+          body = "This digest has #{mails.size} messages for you:\n\n" + body  
         end
         new.body = body
         email = email_class.create!(:from => email.from, :to => to, :mail => new.to_s, :ready => true)
