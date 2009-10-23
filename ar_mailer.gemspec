@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar_mailer}
-  s.version = "2.1.5"
+  s.version = "2.1.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Eric Hodel", "Adam Meehan"]
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.executables = ["ar_sendmail"]
   s.extra_rdoc_files = ["History.txt", "LICENSE.txt", "README.rdoc"]
   s.files = ["History.txt", "LICENSE.txt", "README.rdoc", "Rakefile", "bin/ar_sendmail", "generators/ar_mailer/ar_mailer_generator.rb", "generators/ar_mailer/templates/migration.rb", "generators/ar_mailer/templates/model.rb", "lib/action_mailer/ar_mailer.rb", "lib/action_mailer/ar_sendmail.rb", "lib/smtp_tls.rb", "share/bsd/ar_sendmail", "share/linux/ar_sendmail", "share/linux/ar_sendmail.conf", "test/resources/action_mailer.rb", "test/test_armailer.rb", "test/test_arsendmail.rb", "test/test_helper.rb"]
-  s.homepage = %q{http://github.com/adzap/ar_mailer}
+  s.homepage = %q{http://github.com/artemv/ar_mailer}
   s.rdoc_options = ["--main", "README.rdoc"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{seattlerb}

@@ -18,11 +18,13 @@ Bugs:
 
 http://adzap.lighthouseapp.com/projects/26997-ar_mailer
 
-== About
+== About ar_mailer
 
 Even delivering email to the local machine may take too long when you have to
 send hundreds of messages.  ar_mailer allows you to store messages into the
 database for later delivery by a separate process, ar_sendmail.
+
+== About this fork
 
 == Installing ar_mailer (forked)
 
@@ -38,11 +40,11 @@ First, if you haven't already:
 
 Then
 
-  $ sudo gem install adzap-ar_mailer
+  $ sudo gem install artemv-ar_mailer
 
 For Rails >= 2.1, in your environment.rb:
   
-  config.gem "adzap-ar_mailer", :lib => 'action_mailer/ar_mailer', :source => 'http://gems.github.com'
+  config.gem "artemv-ar_mailer", :lib => 'action_mailer/ar_mailer', :source => 'http://gems.github.com'
 
 For Rails 2.0, in an initializer file:
 
