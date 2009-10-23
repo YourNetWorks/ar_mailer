@@ -37,6 +37,15 @@ Sometimes Prod can face some issue that make it error like hell. There's no need
 
 * you can specify :smtp_settings to be used when sending digests: we needed it to be other than default ActionMailer::Base.smtp_settings
 
+Usage example:
+
+    ActionMailer::ARSendmail.digest_error_emails :dump_path => '/var/log/myapp',
+                                                 :subj_prefix => ExceptionNotifier.email_prefix,
+                                                 :smtp_settings =>   {:address =>     "localhost",
+                                                      :port =>        25,
+                                                      :domain =>      'my_domain.com',
+                                                      :tls =>          false,}
+
 Adzap's fork is great because you can use ar_mailer for just one class with it - just what we needed. So we decided to opensource our tweaks in hope that it will be helpful for someone. The code is quite limited but it's fine for our needs, and if you need more you have smth to start with. E.g. it could be improved to support text/html messages or to make certain classes bypass digesting when sending emails with ARMailer.
 
 The fork is sponsored by Your Net Works, Inc.
