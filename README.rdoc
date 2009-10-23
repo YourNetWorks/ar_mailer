@@ -8,11 +8,7 @@ http://rubyforge.org/projects/seattlerb
 
 Documentation:
 
-http://seattlerb.org/ar_mailer
-
-and for forked additions
-
-http://github.com/adzap/ar_mailer/wikis
+http://seattlerb.rubyforge.org/ar_mailer/
 
 Bugs:
 
@@ -25,6 +21,9 @@ send hundreds of messages.  ar_mailer allows you to store messages into the
 database for later delivery by a separate process, ar_sendmail.
 
 == About this fork
+
+
+The fork is sponsored by Your Net Works, Inc.
 
 == Installing ar_mailer (forked)
 
