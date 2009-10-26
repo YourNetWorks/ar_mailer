@@ -29,7 +29,7 @@ Sometimes Prod can face some issue that make it error like hell. There's no need
 
 * all messages to same addressee are combined into one digest email
 
-* it only supports text/plain messages
+* digesting only supports text/plain messages
 
 * if the digest mail is too big it gets truncated, and full digest is dumped to a file on server; truncated digest will tell about it
 
