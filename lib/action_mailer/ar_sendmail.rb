@@ -525,6 +525,8 @@ class ActionMailer::ARSendmail
           subjects << subject
           mail = msg.header.select {|key, value| ['date', 'from', 'subject'].include?(key)}.
                   map {|key, value| '%s: %s' % [key.capitalize, value.to_s]}.join("\n")
+          #some providers don't write Date header, e.g. ExceptionNotifier. but it's really welcome in digest items
+          mail = "Date: #{email.created_on}\n#{mail}" unless msg.header['date']
           mail += "\n\n" + msg.body
           mails << mail
           from = msg.header['from'].to_s
@@ -557,7 +559,7 @@ class ActionMailer::ARSendmail
           body = "This digest has #{mails.size} messages for you:\n\n" + body  
         end
         new.body = body
-        email = email_class.create!(:from => email.from, :to => to, :mail => new.to_s, :ready => true)
+        email_class.create!(:from => email.from, :to => to, :mail => new.to_s, :ready => true)
       end
     end
     self.new(:smtp_settings => options[:smtp_settings]).deliver_emails
