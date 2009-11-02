@@ -513,6 +513,7 @@ class ActionMailer::ARSendmail
       subjects = []
       mails = []
       from = nil
+      was_prefixed = false
       email_class.transaction do
         emails = email_class.find(:all, :conditions => {:to => to, :ready => false}, :order => 'created_on')
         msg = nil
@@ -521,7 +522,10 @@ class ActionMailer::ARSendmail
         emails.each do |email|
           msg = TMail::Mail.parse(email.mail)
           subject = msg.subject
-          subject = subject[subj_prefix.length..-1] if subject.starts_with?(subj_prefix)
+          if subject.starts_with?(subj_prefix)
+            was_prefixed = subject
+            subject = subject[subj_prefix.length..-1]
+          end
           subjects << subject
           mail = msg.header.select {|key, value| ['date', 'from', 'subject'].include?(key)}.
                   map {|key, value| '%s: %s' % [key.capitalize, value.to_s]}.join("\n")
@@ -536,7 +540,8 @@ class ActionMailer::ARSendmail
         new = TMail::Mail.new
         new.to = to
         new.from = from
-        subject = subj_prefix + subjects.uniq.join("; ")
+        subject = subjects.uniq.join("; ")
+        subject = subj_prefix + subject if was_prefixed
         new.subject = subject.size > max_subj_size ? subject[0..max_subj_size] + '... (and more)' : subject
         new.mime_version = msg.mime_version
         new.content_type = "text/plain" #this code doesn't really support anything else
