@@ -20,7 +20,7 @@ database for later delivery by a separate process, ar_sendmail.
 
 GitHub Project:
 
-http://github.com/artemv/ar_mailer
+http://github.com/YourNetWorks/ar_mailer
 
 We didn't really needed ar_mailer - instead we wanted to digest error email notifications sent by ExceptionNotifier.
 Sometimes Prod can face some issue that make it error like hell. There's no need to receive these errors one by one - we wanted them to be combined into digest periodically - in our case SMTP provider's tariff plan limits outgoing messages number. So we used adzap-ar_mailer for error messages buffering and then made it combine them to digests based on To field. Also we already had BackgrounDRB so we didn't need separate ar_sendmail process. So, what does this fork do out of the box:
