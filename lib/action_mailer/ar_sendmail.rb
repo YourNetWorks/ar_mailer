@@ -503,11 +503,10 @@ class ActionMailer::ARSendmail
     mail_body_size_limit = options[:mail_body_size_limit]
 
     email_class = ActionMailer::Base.email_class
-    #Email.count(:group => :to) doesn't work because to is reserved word in MySQL
-    counts = email_class.connection.select_rows("select `to`, count(*) AS count_all FROM `emails` where !ready GROUP BY `to`")
+    counts = Email.count(:group => '"to"', :conditions => 'not ready')
     counts.each do |to, count|
       if count.to_i == 1
-        email_class.update_all(['ready = ?', true], ['`to` = ?', to])
+        email_class.update_all({:ready => true}, {:to => to})
         next
       end
       subjects = []
