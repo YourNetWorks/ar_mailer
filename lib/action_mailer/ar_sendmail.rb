@@ -520,14 +520,18 @@ class ActionMailer::ARSendmail
         last_date = nil
         emails.each do |email|
           msg = TMail::Mail.parse(email.mail)
-          subject = msg.subject
+          subject = msg.subject rescue "[error retrieving original message subject]"
           if subject.starts_with?(subj_prefix)
             was_prefixed = subject
             subject = subject[subj_prefix.length..-1]
           end
           subjects << subject
-          mail = msg.header.select {|key, value| ['date', 'from', 'subject'].include?(key)}.
-                  map {|key, value| '%s: %s' % [key.capitalize, value.to_s]}.join("\n")
+          mail = msg.header.
+              select {|key, value| ['date', 'from', 'subject'].include?(key)}.
+              map do |key, value|
+            value = TMail::Unquoter.unquote_and_convert_to(value.to_s, 'utf-8') rescue "[error retrieving original #{key}]"
+            '%s: %s' % [key.capitalize, value]
+          end.join("\n")
           #some providers don't write Date header, e.g. ExceptionNotifier. but it's really welcome in digest items
           mail = "Date: #{email.created_on}\n#{mail}" unless msg.header['date']
           mail += "\n\n" + msg.body
