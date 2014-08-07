@@ -503,7 +503,7 @@ class ActionMailer::ARSendmail
     mail_body_size_limit = options[:mail_body_size_limit]
 
     email_class = ActionMailer::Base.email_class
-    counts = Email.count(:group => '"to"', :conditions => 'not ready')
+    counts = Email.count(:group => Email.connection.quote_column_name(:to), :conditions => {:ready => false})
     counts.each do |to, count|
       if count.to_i == 1
         email_class.update_all({:ready => true}, {:to => to})
